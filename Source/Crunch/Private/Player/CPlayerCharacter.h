@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Character/CCharacter.h"
+#include "GAS/CGameplayAbilityTypes.h"
 #include "CPlayerCharacter.generated.h"
 
 class UInputMappingContext;
@@ -42,10 +43,14 @@ private:
 	TObjectPtr<UInputAction> MoveIA;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TMap<ECAbilityInputID, TObjectPtr<UInputAction >> GameplayAbilityInputActions;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputMappingContext> GameplayIMC;
 
 	void HandleLookInput(const FInputActionValue& InputActionValue);
 	void HandleMoveInput(const FInputActionValue& InputActionValue);
+	void HandleAbilityInput(const FInputActionValue& InputActionValue, ECAbilityInputID InputID);
 
 	FVector GetLookRightDirection() const;
 	FVector GetLookForwardDirection() const;

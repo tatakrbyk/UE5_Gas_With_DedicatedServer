@@ -1,0 +1,21 @@
+#pragma once
+
+#include "CoreMinimal.h"
+#include "CGameplayAbilityTypes.generated.h"
+
+UENUM(BlueprintType)
+enum class ECAbilityInputID : uint8
+{
+	None				UMETA(DisplayName = "NONE"),
+	BasicAttack			UMETA(DisplayName = "Basic Attack"),
+	AbilityOne			UMETA(DisplayName = "Ability One"),
+	AbilityTwo			UMETA(DisplayName = "Ability Two"),
+	AbilityThree		UMETA(DisplayName = "Ability Three"),
+	AbilityFour		    UMETA(DisplayName = "Ability Four"),
+	AbilityFive			UMETA(DisplayName = "Ability Five"),
+	AbilitySix			UMETA(DisplayName = "Ability Six"),
+	Confirm				UMETA(DisplayName = "Confirm"), 
+	cancel              UMETA(DisplayName = "Cancel"),
+
+	
+};
