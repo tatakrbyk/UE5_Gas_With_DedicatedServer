@@ -5,10 +5,13 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "AbilitySystemInterface.h"
+#include "GenericTeamAgentInterface.h"
+#include "GameplayTagContainer.h"
+
 #include "CCharacter.generated.h"
 
 UCLASS()
-class ACCharacter : public ACharacter, public IAbilitySystemInterface
+class ACCharacter : public ACharacter, public IAbilitySystemInterface, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 
@@ -21,6 +24,7 @@ public:
 	void ServerSideInit();
 	void ClientSideInit();
 	bool IsLocallyControlledByPlayer() const;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
 	virtual void BeginPlay() override;
@@ -29,7 +33,17 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	/* Generic Team Agent Interface Start */
+	virtual void SetGenericTeamId(const FGenericTeamId& NewTeamID) override;
+	virtual FGenericTeamId GetGenericTeamId() const override;
+	/* Generic Team Agent Interface End */
 
+private:
+	UPROPERTY(ReplicatedUsing= OnRep_TeamID)
+	FGenericTeamId TeamID;
+
+	UFUNCTION()
+	virtual void OnRep_TeamID();
 	/**********************************************************************************/
 	/*									GAS										      */
 
@@ -37,6 +51,9 @@ public:
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 private:
+
+	void BindGASChangeDelegates();
+	void DeathTagUpdated(const FGameplayTag Tag, int32 NewCount);
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Game Ability")
 	TObjectPtr<class UCAbilitySystemComponent> CAbilitySystemComponent;
@@ -63,6 +80,40 @@ private:
 
 	FTimerHandle HeadStatsGaugeVisibilityUpdateTimerHandle;
 	void UpdateHeadGaugeVisibility();
+	void SetStatusGaugeEnabled(bool bIsEnabled);
 	/**********************************************************************************/
+
+	/* Death And Respawn */
+public:
+	bool IsDead() const;
+	void RespawnImmediately();
+private:
+	FTransform MeshRelativeTransform;
+	UPROPERTY(EditDefaultsOnly, Category = "Death")
+	float DeathMontageFinishTimeShift = -0.8f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Death")
+	TObjectPtr<UAnimMontage> DeathMontage;
+	
+	FTimerHandle DeathMontageTimerHandle;
+
+	void DeathMontageFinished();
+	void SetRagdollEnabled(bool bIsEnabled); 
+
+	void PlayDeathAnimation();
+	void StartDeathSequence();	
+	void Respawn();
+
+	virtual void OnDead();
+	virtual void OnRespawn();
+	/* Death And Respawn end*/
+
+	/* AI */
+private:
+	
+	void SetAIPerceptionStimuliSourceEnabled(bool bIsEnabled);
+	UPROPERTY()
+	TObjectPtr<class UAIPerceptionStimuliSourceComponent> PerceptionStimuliSourceComponent;
+	/* AI End*/
 
 };

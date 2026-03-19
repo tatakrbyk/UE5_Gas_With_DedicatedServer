@@ -102,3 +102,21 @@ FVector ACPlayerCharacter::GetMoveForwardDirection() const
 {
 	return FVector::CrossProduct(GetLookRightDirection(), FVector::UpVector);
 }
+
+void ACPlayerCharacter::OnDead()
+{
+	APlayerController* PlayerController = GetController<APlayerController>();
+	if (PlayerController)
+	{
+		DisableInput(PlayerController);
+	}
+}
+
+void ACPlayerCharacter::OnRespawn()
+{
+	APlayerController* PlayerController = GetController<APlayerController>();
+	if (PlayerController)
+	{
+		EnableInput(PlayerController);
+	}
+}

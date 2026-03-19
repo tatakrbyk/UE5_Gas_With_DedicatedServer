@@ -6,6 +6,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 
+
 UAnimInstance* UCGameplayAbility::GetOwnerAnimInstance() const
 {
     USkeletalMeshComponent* OwnerSkeletalMeshComponent = GetOwningComponentFromActorInfo();
@@ -16,11 +17,13 @@ UAnimInstance* UCGameplayAbility::GetOwnerAnimInstance() const
     return nullptr;
 }
 
-TArray<FHitResult> UCGameplayAbility::GetHitResultFromSweepLocationTargetData(const FGameplayAbilityTargetDataHandle& TargetDataHandle, float SphereSweepRadius, bool bDrawDebug, bool bIgnoreSelf) const
+
+TArray<FHitResult> UCGameplayAbility::GetHitResultFromSweepLocationTargetData(const FGameplayAbilityTargetDataHandle& TargetDataHandle, float SphereSweepRadius, ETeamAttitude::Type TargetTeam, bool bDrawDebug, bool bIgnoreSelf) const
 {
 	TArray<FHitResult> OutResults; 
 	TSet<AActor*> HitActors;
 
+	IGenericTeamAgentInterface* OwnerTeamInterface = Cast<IGenericTeamAgentInterface>(GetAvatarActorFromActorInfo());
 	for (const TSharedPtr<FGameplayAbilityTargetData> TargetData : TargetDataHandle.Data)
 	{
 		FVector StartLoc = TargetData->GetOrigin().GetTranslation(); 
@@ -43,6 +46,13 @@ TArray<FHitResult> UCGameplayAbility::GetHitResultFromSweepLocationTargetData(co
 		for (const FHitResult& Result : Results)
 		{
 			if (HitActors.Contains(Result.GetActor())) continue;
+
+			if (OwnerTeamInterface)
+			{
+				ETeamAttitude::Type OtherActorTeamAttitude = OwnerTeamInterface->GetTeamAttitudeTowards(*Result.GetActor());
+				if (OtherActorTeamAttitude != TargetTeam) continue;
+
+			}
 			
 			HitActors.Add(Result.GetActor());
 			OutResults.Add(Result);

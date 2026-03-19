@@ -56,5 +56,10 @@ private:
 	FVector GetLookForwardDirection() const;
 	FVector GetMoveForwardDirection() const;
 
+	/* Death and Respawn */
+	virtual void OnDead() override;
+	virtual void OnRespawn() override;
+	/* Death and Respawn End*/
+
 
 };

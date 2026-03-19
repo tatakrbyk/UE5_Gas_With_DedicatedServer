@@ -14,12 +14,12 @@ UGA_Combo::UGA_Combo()
 	FGameplayTagContainer AssetTags;
 	AssetTags.AddTag(UCAbilitySystemStatics::GetBasicAttackAbilityTag());
 	SetAssetTags(AssetTags);
-	BlockAbilitiesWithTag.AddTag(UCAbilitySystemStatics::GetBasicAttackAbilityTag());
+	BlockAbilitiesWithTag.AddTag(UCAbilitySystemStatics::GetBasicAttackAbilityTag());	// Meaning -> Block Double Combo Attack
 }
 
 void UGA_Combo::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
-	if (!K2_CommitAbility())
+	if (!K2_CommitAbility()) // Apply cost, Start cooldown, etc..., It returns false if the cost is not met or if it is in cooldown etc.... apply End Ability
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[GA COMBO] (ActivateAbility) !CommitAbility "));
 
@@ -29,6 +29,7 @@ void UGA_Combo::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const F
 	
 	if (HasAuthorityOrPredictionKey(ActorInfo, &ActivationInfo))
 	{
+		// Play Combo01
 		UAbilityTask_PlayMontageAndWait* PlayComboMontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, NAME_None, ComboMontage);
 		PlayComboMontageTask->OnBlendOut.AddDynamic(this, &UGA_Combo::K2_EndAbility);
 		PlayComboMontageTask->OnCancelled.AddDynamic(this, &UGA_Combo::K2_EndAbility);
@@ -36,6 +37,9 @@ void UGA_Combo::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const F
 		PlayComboMontageTask->OnInterrupted.AddDynamic(this, &UGA_Combo::K2_EndAbility);
 		PlayComboMontageTask->ReadyForActivation();
 
+		// Wait for the Combo Change event. 
+		// If the next combo (combo02, combo03, etc.) occurs, play the corresponding animation.
+		// If the combo change ends, stop the combo.
 		UAbilityTask_WaitGameplayEvent* WaitComboChangeEventTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, GetComboChangedEventTag() , nullptr, false, false);
 		WaitComboChangeEventTask->EventReceived.AddDynamic(this, &UGA_Combo::ComboChangedEventReceived);
 		WaitComboChangeEventTask->ReadyForActivation();
@@ -127,7 +131,7 @@ void UGA_Combo::ComboChangedEventReceived(FGameplayEventData Data)
 
 void UGA_Combo::TryDamage(FGameplayEventData Data)
 {
-	TArray<FHitResult> HitResults = GetHitResultFromSweepLocationTargetData(Data.TargetData, TargetSweepSphereRadius, true, true);
+	TArray<FHitResult> HitResults = GetHitResultFromSweepLocationTargetData(Data.TargetData, TargetSweepSphereRadius );
 
 	for (const FHitResult& HitResult : HitResults)
 	{
