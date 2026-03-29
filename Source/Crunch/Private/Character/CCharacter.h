@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -7,6 +5,7 @@
 #include "AbilitySystemInterface.h"
 #include "GenericTeamAgentInterface.h"
 #include "GameplayTagContainer.h"
+#include <GAS/CGameplayAbilityTypes.h>
 
 #include "CCharacter.generated.h"
 
@@ -25,6 +24,7 @@ public:
 	void ClientSideInit();
 	bool IsLocallyControlledByPlayer() const;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	const TMap<ECAbilityInputID, TSubclassOf<UGameplayAbility>>& GetAbilities() const;
 
 protected:
 	virtual void BeginPlay() override;
@@ -50,10 +50,14 @@ private:
 public:
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_SendGameplayEventToSelf(const FGameplayTag& EventTag, const FGameplayEventData& EventData);
+
 private:
 
 	void BindGASChangeDelegates();
 	void DeathTagUpdated(const FGameplayTag Tag, int32 NewCount);
+	void StunTagUpdated(const FGameplayTag Tag, int32 NewCount);
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Game Ability")
 	TObjectPtr<class UCAbilitySystemComponent> CAbilitySystemComponent;
@@ -81,6 +85,15 @@ private:
 	FTimerHandle HeadStatsGaugeVisibilityUpdateTimerHandle;
 	void UpdateHeadGaugeVisibility();
 	void SetStatusGaugeEnabled(bool bIsEnabled);
+	
+	/*  Stun */
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "Stun")
+	TObjectPtr<UAnimMontage> StunMontage;
+
+	virtual void OnStun();
+	virtual void OnRecoverFromStun();
+	/*  Stun End */
 	/**********************************************************************************/
 
 	/* Death And Respawn */

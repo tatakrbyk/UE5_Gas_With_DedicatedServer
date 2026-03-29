@@ -3,6 +3,7 @@
 
 #include "Player/CPlayerCharacter.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/PlayerController.h"
@@ -10,6 +11,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "AbilitySystemComponent.h"
+#include "GAS/CAbilitySystemStatics.h"
 
 ACPlayerCharacter::ACPlayerCharacter()
 {
@@ -84,7 +86,27 @@ void ACPlayerCharacter::HandleAbilityInput(const FInputActionValue& InputActionV
 	else
 	{
 		GetAbilitySystemComponent()->AbilityLocalInputReleased((int32)InputID);
+	}
 
+	if (InputID == ECAbilityInputID::BasicAttack)
+	{
+		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, UCAbilitySystemStatics::GetBasicAttackInputPressedTag(), FGameplayEventData());
+		Server_SendGameplayEventToSelf(UCAbilitySystemStatics::GetBasicAttackInputPressedTag(), FGameplayEventData());
+	}
+}
+
+void ACPlayerCharacter::SetInputEnabledFromPlayerController(bool bEnabled)
+{
+	APlayerController* PlayerController = GetController<APlayerController>();
+	if (!PlayerController) return;
+
+	if(bEnabled)
+	{
+		EnableInput(PlayerController);
+	}
+	else
+	{
+		DisableInput(PlayerController);
 	}
 }
 
@@ -103,20 +125,23 @@ FVector ACPlayerCharacter::GetMoveForwardDirection() const
 	return FVector::CrossProduct(GetLookRightDirection(), FVector::UpVector);
 }
 
+void ACPlayerCharacter::OnStun()
+{
+	SetInputEnabledFromPlayerController(false);
+}
+
+void ACPlayerCharacter::OnRecoverFromStun()
+{
+	if (IsDead()) return;
+	SetInputEnabledFromPlayerController(true);
+}
+
 void ACPlayerCharacter::OnDead()
 {
-	APlayerController* PlayerController = GetController<APlayerController>();
-	if (PlayerController)
-	{
-		DisableInput(PlayerController);
-	}
+	SetInputEnabledFromPlayerController(false);
 }
 
 void ACPlayerCharacter::OnRespawn()
 {
-	APlayerController* PlayerController = GetController<APlayerController>();
-	if (PlayerController)
-	{
-		EnableInput(PlayerController);
-	}
+	SetInputEnabledFromPlayerController(true);
 }

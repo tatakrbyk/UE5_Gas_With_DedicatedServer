@@ -51,11 +51,16 @@ private:
 	void HandleLookInput(const FInputActionValue& InputActionValue);
 	void HandleMoveInput(const FInputActionValue& InputActionValue);
 	void HandleAbilityInput(const FInputActionValue& InputActionValue, ECAbilityInputID InputID);
+	void SetInputEnabledFromPlayerController(bool bEnabled);
 
 	FVector GetLookRightDirection() const;
 	FVector GetLookForwardDirection() const;
 	FVector GetMoveForwardDirection() const;
 
+	/* Stun */
+	virtual void OnStun() override;
+	virtual void OnRecoverFromStun() override;
+	/* Stund End*/
 	/* Death and Respawn */
 	virtual void OnDead() override;
 	virtual void OnRespawn() override;

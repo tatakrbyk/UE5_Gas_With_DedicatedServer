@@ -13,6 +13,7 @@
 #include "Widgets/OverHeadStatsGauge.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
+#include <AbilitySystemBlueprintLibrary.h>
 
 ACCharacter::ACCharacter()
 {
@@ -63,6 +64,11 @@ void ACCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	DOREPLIFETIME(ACCharacter, TeamID);
 }
 
+const TMap<ECAbilityInputID, TSubclassOf<UGameplayAbility>>& ACCharacter::GetAbilities() const
+{
+	return CAbilitySystemComponent->GetAbilities();
+}
+
 void ACCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -103,6 +109,7 @@ void ACCharacter::BindGASChangeDelegates()
 	if (CAbilitySystemComponent)
 	{
 		CAbilitySystemComponent->RegisterGameplayTagEvent(UCAbilitySystemStatics::GetDeadStatTag()).AddUObject(this, &ACCharacter::DeathTagUpdated);
+		CAbilitySystemComponent->RegisterGameplayTagEvent(UCAbilitySystemStatics::GetStunStatTag()).AddUObject(this, &ACCharacter::StunTagUpdated);
 	}
 }
 
@@ -118,6 +125,30 @@ void ACCharacter::DeathTagUpdated(const FGameplayTag Tag, int32 NewCount)
 	}
 }
 
+void ACCharacter::StunTagUpdated(const FGameplayTag Tag, int32 NewCount)
+{
+	if (IsDead()) return;
+
+	if (NewCount != 0)
+	{
+		OnStun();
+		PlayAnimMontage(StunMontage);
+	}
+	else
+	{
+		OnRecoverFromStun();
+		StopAnimMontage(StunMontage);
+	}
+}
+void ACCharacter::Server_SendGameplayEventToSelf_Implementation(const FGameplayTag& EventTag, const FGameplayEventData& EventData)
+{
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, EventTag, EventData);
+}
+
+bool ACCharacter::Server_SendGameplayEventToSelf_Validate(const FGameplayTag& EventTag, const FGameplayEventData& EventData)
+{
+	return true;
+}
 
 void ACCharacter::ConfigureOverHeadStatusWidget()
 {
@@ -164,6 +195,14 @@ void ACCharacter::SetStatusGaugeEnabled(bool bIsEnabled)
 	}
 }
 
+void ACCharacter::OnStun()
+{
+}
+
+void ACCharacter::OnRecoverFromStun()
+{
+}
+
 bool ACCharacter::IsDead() const
 {
 	return GetAbilitySystemComponent()->HasMatchingGameplayTag(UCAbilitySystemStatics::GetDeadStatTag());
@@ -171,12 +210,12 @@ bool ACCharacter::IsDead() const
 
 void ACCharacter::RespawnImmediately()
 {
-	if(HasAuthority())
+	if (HasAuthority())
 	{
 		GetAbilitySystemComponent()->RemoveActiveEffectsWithGrantedTags(FGameplayTagContainer(UCAbilitySystemStatics::GetDeadStatTag()));
-
 	}
 }
+
 
 void ACCharacter::DeathMontageFinished()
 {

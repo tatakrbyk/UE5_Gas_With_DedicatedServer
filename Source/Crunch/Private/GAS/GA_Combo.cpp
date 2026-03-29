@@ -21,7 +21,7 @@ void UGA_Combo::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const F
 {
 	if (!K2_CommitAbility()) // Apply cost, Start cooldown, etc..., It returns false if the cost is not met or if it is in cooldown etc.... apply End Ability
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[GA COMBO] (ActivateAbility) !CommitAbility "));
+		//UE_LOG(LogTemp, Warning, TEXT("[GA COMBO] (ActivateAbility) !CommitAbility "));
 
 		K2_EndAbility();
 		return;
@@ -116,7 +116,7 @@ void UGA_Combo::ComboChangedEventReceived(FGameplayEventData Data)
 	if (EventTag == GetComboChangedEventEndTag())
 	{
 		NextComboName = NAME_None;
-		UE_LOG(LogTemp, Warning, TEXT("Next Combo is END:"));
+		//UE_LOG(LogTemp, Warning, TEXT("Next Combo is END:"));
 
 		return;
 	}
@@ -125,7 +125,7 @@ void UGA_Combo::ComboChangedEventReceived(FGameplayEventData Data)
 	UGameplayTagsManager::Get().SplitGameplayTagFName(EventTag, TagNames);
 	NextComboName = TagNames.Last();
 
-	UE_LOG(LogTemp, Warning, TEXT("Next Combo is now: %s"), *NextComboName.ToString());
+	//UE_LOG(LogTemp, Warning, TEXT("Next Combo is now: %s"), *NextComboName.ToString());
 	
 }
 
@@ -135,15 +135,7 @@ void UGA_Combo::TryDamage(FGameplayEventData Data)
 
 	for (const FHitResult& HitResult : HitResults)
 	{
-		TSubclassOf<UGameplayEffect> GameplayEffect = GetDamageEffectForCurrentCombo();
-		FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingGameplayEffectSpec(GameplayEffect, GetAbilityLevel(GetCurrentAbilitySpecHandle(),GetCurrentActorInfo()));
-
-		FGameplayEffectContextHandle EffectContext = MakeEffectContext(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo());
-		EffectContext.AddHitResult(HitResult);
-		
-		EffectSpecHandle.Data->SetContext(EffectContext);
-
-		ApplyGameplayEffectSpecToTarget(GetCurrentAbilitySpecHandle(), CurrentActorInfo, CurrentActivationInfo, EffectSpecHandle, 
-			UAbilitySystemBlueprintLibrary::AbilityTargetDataFromActor(HitResult.GetActor()));
+		TSubclassOf<UGameplayEffect> GameplayEffect = GetDamageEffectForCurrentCombo();		
+		ApplyGameplayEffectToHitResultActor(HitResult, GameplayEffect, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
 	}
 }

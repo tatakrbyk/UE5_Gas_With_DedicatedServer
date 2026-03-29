@@ -1,5 +1,7 @@
 #include "GAS/CAbilitySystemStatics.h"
 
+#include "Abilities/GameplayAbility.h"
+
 
 FGameplayTag UCAbilitySystemStatics::GetBasicAttackAbilityTag()
 {
@@ -9,4 +11,41 @@ FGameplayTag UCAbilitySystemStatics::GetBasicAttackAbilityTag()
 FGameplayTag UCAbilitySystemStatics::GetDeadStatTag()
 {
 	return FGameplayTag::RequestGameplayTag("Stats.Dead");
+}
+
+FGameplayTag UCAbilitySystemStatics::GetStunStatTag()
+{
+	return FGameplayTag::RequestGameplayTag("Stats.Stun");
+}
+
+FGameplayTag UCAbilitySystemStatics::GetBasicAttackInputPressedTag()
+{
+	return FGameplayTag::RequestGameplayTag("Ability.BasicAttack.Pressed");
+
+}
+
+float UCAbilitySystemStatics::GetStaticCooldownDurationForAbility(const UGameplayAbility* Ability)
+{
+	if (!Ability) return 0.f;
+
+	const UGameplayEffect* CooldownEffect = Ability->GetCooldownGameplayEffect();
+	if (!CooldownEffect) return 0.f;
+
+	float CooldownDuration = 0.f;
+
+	CooldownEffect->DurationMagnitude.GetStaticMagnitudeIfPossible(1, CooldownDuration);
+	return FMath::Abs(CooldownDuration);
+}
+
+float UCAbilitySystemStatics::GetStaticCostForAbility(const UGameplayAbility* Ability)
+{
+	if (!Ability) return 0.f;
+
+	const UGameplayEffect* CostEffect = Ability->GetCostGameplayEffect();
+	if (!CostEffect || CostEffect->Modifiers.Num() == 0) return 0.f;
+
+	float Cost = 0.f;
+	CostEffect->Modifiers[0].ModifierMagnitude.GetStaticMagnitudeIfPossible(1, Cost);
+	return FMath::Abs(Cost);
+		
 }

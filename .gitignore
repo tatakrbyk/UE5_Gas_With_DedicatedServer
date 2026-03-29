@@ -71,6 +71,7 @@ Content/ParagonMinions/*
 Content/Models/*
 Content/Megascans/*
 Content/MSPresets/*
+Content/Art/*
 
 # Compiled source files for the engine to use
 Intermediate/*

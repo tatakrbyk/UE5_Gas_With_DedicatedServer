@@ -24,6 +24,9 @@ public:
 	void GiveInitialAbilities();
 	void ApplyFullStatEffect();
 
+	// Get the Abilities that is unique for the avatar actor, this do not include generic/basics  ones
+	const TMap<ECAbilityInputID, TSubclassOf<UGameplayAbility>>& GetAbilities() const;
+
 private:
 	
 	void AuthApplyGameplayEffect(TSubclassOf<UGameplayEffect> GameplayEffect, int Level = 1);
