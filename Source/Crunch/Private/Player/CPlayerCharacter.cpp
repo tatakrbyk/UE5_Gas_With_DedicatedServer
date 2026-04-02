@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Player/CPlayerCharacter.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
@@ -12,12 +9,15 @@
 #include "EnhancedInputSubsystems.h"
 #include "AbilitySystemComponent.h"
 #include "GAS/CAbilitySystemStatics.h"
+#include "Crunch/Crunch.h"
+
 
 ACPlayerCharacter::ACPlayerCharacter()
 {
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(GetRootComponent());
 	CameraBoom->bUsePawnControlRotation = true;
+	CameraBoom->ProbeChannel = ECC_SpringArm;
 
 	ViewCam = CreateDefaultSubobject<UCameraComponent>(TEXT("ViewCam"));
 	ViewCam->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
@@ -144,4 +144,31 @@ void ACPlayerCharacter::OnDead()
 void ACPlayerCharacter::OnRespawn()
 {
 	SetInputEnabledFromPlayerController(true);
+}
+
+void ACPlayerCharacter::OnAimStateChanged(bool bIsAimming)
+{
+	LerpCameraToLocalOffsetLocation(bIsAimming ? CameraAimLocationOffset : FVector{0.f});
+}
+
+void ACPlayerCharacter::LerpCameraToLocalOffsetLocation(const FVector& Goal)
+{
+	GetWorldTimerManager().ClearTimer(CameraLerpTimerHandle);
+	GetWorldTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &ACPlayerCharacter::TickCameraLocalOffsetLerp, Goal));
+}
+
+void ACPlayerCharacter::TickCameraLocalOffsetLerp(FVector Goal)
+{
+	FVector CurrentLocalOffset = ViewCam->GetRelativeLocation();
+	if (FVector::Dist(CurrentLocalOffset, Goal) < 1.f)
+	{
+		ViewCam->SetRelativeLocation(Goal);
+		return;
+	}
+
+	float LerpAlpha = FMath::Clamp(GetWorld()->GetDeltaSeconds() * CameraLerpSpeed, 0.f, 1.f);
+	FVector NewLocalOffset = FMath::Lerp(CurrentLocalOffset, Goal, LerpAlpha);
+	ViewCam->SetRelativeLocation(NewLocalOffset);
+
+	GetWorldTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &ACPlayerCharacter::TickCameraLocalOffsetLerp, Goal));
 }

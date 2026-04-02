@@ -1,0 +1,75 @@
+#include "GAS/GA_GroundBlast.h"
+
+#include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
+#include "Abilities/Tasks/AbilityTask_WaitTargetData.h"
+#include "GAS/CAbilitySystemStatics.h"
+#include "TargetActor_GroundPick.h"
+#include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystemComponent.h"
+
+UGA_GroundBlast::UGA_GroundBlast()
+{
+	ActivationOwnedTags.AddTag(UCAbilitySystemStatics::GetAimStatTag());
+	BlockAbilitiesWithTag.AddTag(UCAbilitySystemStatics::GetBasicAttackAbilityTag());
+}
+
+void UGA_GroundBlast::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
+{
+	if (!HasAuthorityOrPredictionKey(CurrentActorInfo, &CurrentActivationInfo)) return;
+
+	UAbilityTask_PlayMontageAndWait* PlayGroundBlastAnimTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, NAME_None, TargettingMontage);
+	PlayGroundBlastAnimTask->OnBlendOut.AddDynamic(this, &UGA_GroundBlast::K2_EndAbility);
+	PlayGroundBlastAnimTask->OnCancelled.AddDynamic(this, &UGA_GroundBlast::K2_EndAbility);
+	PlayGroundBlastAnimTask->OnInterrupted.AddDynamic(this, &UGA_GroundBlast::K2_EndAbility);
+	PlayGroundBlastAnimTask->OnCompleted.AddDynamic(this, &UGA_GroundBlast::K2_EndAbility);
+	PlayGroundBlastAnimTask->ReadyForActivation();
+
+	UAbilityTask_WaitTargetData* WaitTargetDataTask = UAbilityTask_WaitTargetData::WaitTargetData(this, NAME_None, EGameplayTargetingConfirmation::UserConfirmed, TargetActorClass);
+	WaitTargetDataTask->ValidData.AddDynamic(this, &UGA_GroundBlast::TargetConfirmed);
+	WaitTargetDataTask->Cancelled.AddDynamic(this, &UGA_GroundBlast::TargetCancelled);
+	WaitTargetDataTask->ReadyForActivation();
+
+	AGameplayAbilityTargetActor* TargetActor;
+	WaitTargetDataTask->BeginSpawningActor(this, TargetActorClass, TargetActor);
+	WaitTargetDataTask->FinishSpawningActor(this, TargetActor);
+}
+
+void UGA_GroundBlast::TargetConfirmed(const FGameplayAbilityTargetDataHandle& TargetDataHandle)
+{
+	if (!K2_CommitAbility())
+	{
+		K2_EndAbility();
+		return;
+	}
+	
+	if (K2_HasAuthority())
+	{
+		BP_ApplyGameplayEffectToTarget(TargetDataHandle, DamageEffectDef.DamageEffect, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo ));
+		PushTargets(TargetDataHandle, DamageEffectDef.PushVelocity);
+	}
+
+	// GC_GroundBlast
+	FGameplayCueParameters BlastingGameplayCueParams;
+	BlastingGameplayCueParams.Location = UAbilitySystemBlueprintLibrary::GetHitResultFromTargetData(TargetDataHandle,1).ImpactPoint;
+	BlastingGameplayCueParams.RawMagnitude = TargetAreaRadius;
+	
+	GetAbilitySystemComponentFromActorInfo()->ExecuteGameplayCue(BlastGameplayCueTag, BlastingGameplayCueParams);
+	GetAbilitySystemComponentFromActorInfo()->ExecuteGameplayCue(UCAbilitySystemStatics::GetCameraShakeGameplayCueTag(), BlastingGameplayCueParams);
+
+	UAnimInstance* OwnerAnimInst = GetOwnerAnimInstance();
+	if (OwnerAnimInst)
+	{
+		OwnerAnimInst->Montage_Play(CastMontage);
+	}
+
+	
+	UE_LOG(LogTemp, Warning, TEXT("Target Confirmed"));
+	K2_EndAbility();
+}
+
+void UGA_GroundBlast::TargetCancelled(const FGameplayAbilityTargetDataHandle& TargetDataHandle)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Target Canceled"));
+	K2_EndAbility();
+
+}

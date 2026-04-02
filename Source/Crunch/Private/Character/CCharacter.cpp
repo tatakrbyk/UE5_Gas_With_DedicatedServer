@@ -14,12 +14,16 @@
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
 #include <AbilitySystemBlueprintLibrary.h>
+#include "Crunch/Crunch.h"
+
 
 ACCharacter::ACCharacter()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_SpringArm, ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Target, ECR_Ignore);
 
 	CAbilitySystemComponent = CreateDefaultSubobject<UCAbilitySystemComponent>("C Ability System Component");
 	CAttributeSet = CreateDefaultSubobject<UCAttributeSet>("C Attribute Set");
@@ -110,6 +114,7 @@ void ACCharacter::BindGASChangeDelegates()
 	{
 		CAbilitySystemComponent->RegisterGameplayTagEvent(UCAbilitySystemStatics::GetDeadStatTag()).AddUObject(this, &ACCharacter::DeathTagUpdated);
 		CAbilitySystemComponent->RegisterGameplayTagEvent(UCAbilitySystemStatics::GetStunStatTag()).AddUObject(this, &ACCharacter::StunTagUpdated);
+		CAbilitySystemComponent->RegisterGameplayTagEvent(UCAbilitySystemStatics::GetAimStatTag()).AddUObject(this, &ACCharacter::AimTagUpdated);
 	}
 }
 
@@ -139,6 +144,21 @@ void ACCharacter::StunTagUpdated(const FGameplayTag Tag, int32 NewCount)
 		OnRecoverFromStun();
 		StopAnimMontage(StunMontage);
 	}
+}
+void ACCharacter::AimTagUpdated(const FGameplayTag Tag, int32 NewCount)
+{
+	SetIsAimming(NewCount != 0);
+}
+
+void ACCharacter::SetIsAimming(bool bIsAiming)
+{
+	bUseControllerRotationYaw = bIsAiming;
+	GetCharacterMovement()->bOrientRotationToMovement = !bIsAiming;
+	OnAimStateChanged(bIsAiming);
+}
+void ACCharacter::OnAimStateChanged(bool bIsAimming)
+{
+	// Override 
 }
 void ACCharacter::Server_SendGameplayEventToSelf_Implementation(const FGameplayTag& EventTag, const FGameplayEventData& EventData)
 {

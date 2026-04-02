@@ -1,0 +1,53 @@
+#pragma once
+
+#include "CoreMinimal.h"
+#include "GAS/CGameplayAbility.h"
+#include "GAS/CGameplayAbilityTypes.h"
+#include "GA_GroundBlast.generated.h"
+
+/**
+ * 
+ */
+UCLASS()
+class UGA_GroundBlast : public UCGameplayAbility
+{
+	GENERATED_BODY()
+
+public:
+	UGA_GroundBlast();
+	virtual void ActivateAbility(
+		const FGameplayAbilitySpecHandle Handle,
+		const FGameplayAbilityActorInfo* ActorInfo,
+		const FGameplayAbilityActivationInfo ActivationInfo,
+		const FGameplayEventData* TriggerEventData) override;
+
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "Cue")
+	FGameplayTag BlastGameplayCueTag;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	FGenericDamageEffectDef  DamageEffectDef;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Targetting")
+	float TargetAreaRadius = 200.f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Targetting")
+	float TargetTraceRange = 2000.f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Targetting")
+	TSubclassOf<class ATargetActor_GroundPick> TargetActorClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	TObjectPtr<UAnimMontage> TargettingMontage;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	TObjectPtr<UAnimMontage> CastMontage;
+
+	UFUNCTION()
+	void TargetConfirmed(const FGameplayAbilityTargetDataHandle& TargetDataHandle);
+
+	UFUNCTION()
+	void TargetCancelled(const FGameplayAbilityTargetDataHandle& TargetDataHandle);
+	
+};
+

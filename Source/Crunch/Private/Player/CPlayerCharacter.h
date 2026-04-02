@@ -61,10 +61,26 @@ private:
 	virtual void OnStun() override;
 	virtual void OnRecoverFromStun() override;
 	/* Stund End*/
+
 	/* Death and Respawn */
 	virtual void OnDead() override;
 	virtual void OnRespawn() override;
 	/* Death and Respawn End*/
+
+	/* Camera View*/
+	virtual void OnAimStateChanged(bool bIsAimming) override;
+
+	UPROPERTY(EditDefaultsOnly, Category = "View")
+	FVector CameraAimLocationOffset;
+
+	UPROPERTY(EditDefaultsOnly, Category = "View")
+	float CameraLerpSpeed = 20.f;
+
+	FTimerHandle CameraLerpTimerHandle;
+	
+	void LerpCameraToLocalOffsetLocation(const FVector& Goal);
+	void TickCameraLocalOffsetLerp(FVector Goal);
+	/**/
 
 
 };

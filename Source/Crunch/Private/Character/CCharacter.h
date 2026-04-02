@@ -58,6 +58,10 @@ private:
 	void BindGASChangeDelegates();
 	void DeathTagUpdated(const FGameplayTag Tag, int32 NewCount);
 	void StunTagUpdated(const FGameplayTag Tag, int32 NewCount);
+	void AimTagUpdated(const FGameplayTag Tag, int32 NewCount);
+	
+	void SetIsAimming(bool bIsAiming);
+	virtual void OnAimStateChanged(bool bIsAimming);
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Game Ability")
 	TObjectPtr<class UCAbilitySystemComponent> CAbilitySystemComponent;
