@@ -27,6 +27,20 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UAbilityListView> ListView_Ability;
 
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UStatsGauge> AttackDamageGauge;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UStatsGauge> ArmorGauge;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UStatsGauge> MoveSpeedGauge;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UStatsGauge> IntelligenceGauge;
+	
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UStatsGauge> StrengthGauge;
 
 	UPROPERTY()
 	TObjectPtr<class UAbilitySystemComponent> OwnerAbilitySystemComponent;

@@ -5,7 +5,8 @@
 #include "AbilitySystemInterface.h"
 #include "GenericTeamAgentInterface.h"
 #include "GameplayTagContainer.h"
-#include <GAS/CGameplayAbilityTypes.h>
+#include "GameplayEffectTypes.h"
+#include "GAS/CGameplayAbilityTypes.h"
 
 #include "CCharacter.generated.h"
 
@@ -53,13 +54,18 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void Server_SendGameplayEventToSelf(const FGameplayTag& EventTag, const FGameplayEventData& EventData);
 
+protected:
+	void UpgradeAbilityWithInputID(ECAbilityInputID InputID);
 private:
 
 	void BindGASChangeDelegates();
 	void DeathTagUpdated(const FGameplayTag Tag, int32 NewCount);
 	void StunTagUpdated(const FGameplayTag Tag, int32 NewCount);
 	void AimTagUpdated(const FGameplayTag Tag, int32 NewCount);
-	
+
+	void MoveSpeedUpdated(const FOnAttributeChangeData& Data);
+	void MaxHealthUpdated(const FOnAttributeChangeData& Data);
+	void MaxManaUpdated(const FOnAttributeChangeData& Data);
 	void SetIsAimming(bool bIsAiming);
 	virtual void OnAimStateChanged(bool bIsAimming);
 

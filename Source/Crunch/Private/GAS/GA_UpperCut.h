@@ -36,9 +36,6 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Combo")
 	float UpperCuComboHoldSpeed = 100.f;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Targetting")
-	float TargetSweepSphereRadius = 120.f;
-
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	TObjectPtr<UAnimMontage> UpperCutMontage;
 

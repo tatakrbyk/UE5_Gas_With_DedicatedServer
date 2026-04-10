@@ -6,7 +6,8 @@
 #include "CAbilitySystemStatics.generated.h"
 
 class UGameplayAbility;
-
+class UAbilitySystemComponent;
+struct FGameplayAbilitySpec;
 /**
  * 
  */
@@ -23,7 +24,26 @@ public:
 	static FGameplayTag GetStunStatTag();
 	static FGameplayTag GetAimStatTag();
 	static FGameplayTag GetCameraShakeGameplayCueTag();
+	
+	static FGameplayTag GetHealthFullStatTag();
+	static FGameplayTag GetHealthEmptyStatTag();
+	static FGameplayTag GetManaFullStatTag();
+	static FGameplayTag GetManaEmptyStatTag();
+
+	static FGameplayTag GetHeroRoleTag();
+	
+	static FGameplayTag GetExperienceAttributeTag();
+	static FGameplayTag GetGoldAttributeTag();
+
+	static bool IsHero(const AActor* ActorToCheck);
+	static bool ISAbilityAtMaxLevel(const FGameplayAbilitySpec& Spec);
 
 	static float GetStaticCooldownDurationForAbility(const UGameplayAbility* Ability);
 	static float GetStaticCostForAbility(const UGameplayAbility* Ability);
+
+	// For Skill Icon Info
+	static bool CheckAbilityCost(const FGameplayAbilitySpec& AbilitySpec, const UAbilitySystemComponent& ASC);
+	static float GetManaCostFor(const UGameplayAbility* AbilityCDO, const UAbilitySystemComponent& ASC, int AbilityLevel);
+	static float GetCooldownDurationFor(const UGameplayAbility* AbilityCDO, const UAbilitySystemComponent& ASC, int AbilityLevel);
+	static float GetCooldownRemainingFor(const UGameplayAbility* AbilityCDO, const UAbilitySystemComponent& ASC);
 };

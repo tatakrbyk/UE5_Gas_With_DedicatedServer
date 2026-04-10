@@ -23,7 +23,6 @@ public:
 
 	virtual void PawnClientRestart() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	
 
 private:
 
@@ -33,6 +32,12 @@ private:
 	UPROPERTY(VisibleDefaultsOnly, Category = "View")
 	TObjectPtr<class UCameraComponent> ViewCam;
 
+	/* GAS Varible */
+	UPROPERTY()
+	TObjectPtr<class UCHeroAttributeSet> HeroAttributeSet;
+
+	/* GAS Varible End*/
+	/* Input Variables */
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputAction> JumpIA;
 
@@ -43,16 +48,24 @@ private:
 	TObjectPtr<UInputAction> MoveIA;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> LearnAbilityLeaderIA;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TMap<ECAbilityInputID, TObjectPtr<UInputAction >> GameplayAbilityInputActions;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputMappingContext> GameplayIMC;
+	/* Input Variables End */
 
 	void HandleLookInput(const FInputActionValue& InputActionValue);
 	void HandleMoveInput(const FInputActionValue& InputActionValue);
+	void HandleLearnAbilityLeaderDownInput(const FInputActionValue& InputActionValue);
+	void HandleLearnAbilityLeaderUpInput(const FInputActionValue& InputActionValue);
+	bool bIsLearnAbilityLeaderDown = false;
 	void HandleAbilityInput(const FInputActionValue& InputActionValue, ECAbilityInputID InputID);
 	void SetInputEnabledFromPlayerController(bool bEnabled);
 
+	
 	FVector GetLookRightDirection() const;
 	FVector GetLookForwardDirection() const;
 	FVector GetMoveForwardDirection() const;

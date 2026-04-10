@@ -1,10 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotify.h"
 #include "GameplayTagContainer.h"
+#include "GenericTeamAgentInterface.h"
 
 #include "AN_SendTargetGroup.generated.h"
 
@@ -21,10 +20,26 @@ public:
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Gameplay Ability")
+	FGameplayTagContainer TriggerGameplayCueTags;
+
+	UPROPERTY(EditAnywhere, Category = "Gameplay Ability")
+	TEnumAsByte<ETeamAttitude::Type> TargetTeam = ETeamAttitude::Hostile;
+
+	UPROPERTY(EditAnywhere, Category = "Gameplay Ability")
+	float SphereSweepRadiusDebug = 60.f;
+
+	UPROPERTY(EditAnywhere, Category = "Gameplay Ability")
+	bool bIgnoreOwner = true;
+
+	UPROPERTY(EditAnywhere, Category = "Gameplay Ability")
+	bool bDrawDebug = true;
+
+	UPROPERTY(EditAnywhere, Category = "Gameplay Ability")
 	FGameplayTag EventTag;
 
 	UPROPERTY(EditAnywhere, Category = "Gameplay Ability")
 	TArray<FName> TargetSocketNames;
 
 	
+	void SendLocalGameplayCue(const FHitResult& HitResult) const; // [GAS] Optimization
 };
